@@ -1,66 +1,114 @@
-# timepal
+# TimePal - Application Architecture & Development Guide
 
-This project uses Quarkus, the Supersonic Subatomic Java Framework.
+This document outlines the technical architecture, layer structure, feature catalog, and development strategy for the **TimePal** project — a "rent-a-friend" app concept.
 
-If you want to learn more about Quarkus, please visit its website: <https://quarkus.io/>.
+> Architecture style: **DDD + Feature-Based Hybrid**, modular mono-repo structure, single entry per ApplicationService, Minimum Viable Command principle.
 
-## Running the application in dev mode
+---
 
-You can run your application in dev mode that enables live coding using:
+## 🔄 Overview
 
-```shell script
+* **Project Name**: TimePal *(subject to change)*
+* **Stack**: Quarkus, Java 17+, Hibernate Panache, PostgreSQL, JWT, Maven
+* **Architecture**: Feature-Based + DDD Hybrid, modular mono-repo, CLI & Dev UI
+* **App Type**: Relationship-based service platform (swipe + service cart)
+
+---
+
+## 📌 Core Architectural Decisions
+
+| Decision                    | Summary                                                      |
+| --------------------------- | ------------------------------------------------------------ |
+| Layers                      | API → Application → Domain → Infrastructure + Foundation     |
+| ApplicationService Entry    | One `ApplicationService` per feature                         |
+| Command Usage               | MVCmd: use immutable command only when needed                |
+| Entity Separation           | Domain Entity ≠ Persistence Entity (mapped separately)       |
+| I/O Model                   | Blocking I/O for now; reactive is a future option            |
+| Event-driven                | Deferred; designed to be extensible later                    |
+| Solo Developer Optimization | Minimize over-abstraction; favor readability and testability |
+
+---
+
+## 🔺 Folder Structure (Summary)
+
+```bash
+src/main/java/com/timepal
+ ├── auth/
+ │   ├── api/               # AuthController
+ │   ├── application/
+ │   │   ├── command/       # LoginCommand, RegisterCommand
+ │   │   └── service/       # AuthApplicationService
+ │   ├── domain/
+ │   │   ├── model/         # UserCredentials
+ │   │   └── service/       # AuthDomainService
+ │   └── infrastructure/   # repositoryimpl, mappers
+
+ ├── user/  # User profile, location, photo, services
+ ├── swipe/
+ ├── match/
+ ├── cart/
+ ├── order/
+ ├── payment/
+ ├── rating/
+ ├── messaging/
+ ├── notification/
+ ├── settings/
+ └── foundation/
+     ├── exception/
+     ├── validation/
+     └── util/
+```
+
+---
+
+## 🔹 Feature Catalog (Core Features)
+
+→ Detailed tables and DB mappings are provided in the separate document: "Feature Catalog & DB Mapping"
+
+1. **Auth** — Registration, login, JWT, refresh tokens
+2. **User Profile** — Photos, services, location
+3. **Discovery/Swipe** — Card swiping, filters
+4. **Matchmaking** — Match creation from mutual likes
+5. **Cart** — Service selection, cart logic
+6. **Order** — Finalizing cart, scheduling meetups
+7. **Payment** — Payment authorization, billing
+8. **Messaging** — In-app chat for matched users
+9. **Rating** — User reviews and ratings
+10. **Notification** — In-app and push notifications
+11. **Settings** — Privacy, preferences, account settings
+
+---
+
+## 🌐 Running the Project
+
+### Development Mode
+
+```bash
 ./mvnw quarkus:dev
 ```
 
-> **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at <http://localhost:8080/q/dev/>.
+### Package the App
 
-## Packaging and running the application
-
-The application can be packaged using:
-
-```shell script
+```bash
 ./mvnw package
 ```
 
-It produces the `quarkus-run.jar` file in the `target/quarkus-app/` directory.
-Be aware that it’s not an _über-jar_ as the dependencies are copied into the `target/quarkus-app/lib/` directory.
+### Uber-JAR
 
-The application is now runnable using `java -jar target/quarkus-app/quarkus-run.jar`.
-
-If you want to build an _über-jar_, execute the following command:
-
-```shell script
+```bash
 ./mvnw package -Dquarkus.package.jar.type=uber-jar
 ```
 
-The application, packaged as an _über-jar_, is now runnable using `java -jar target/*-runner.jar`.
+### Native Binary
 
-## Creating a native executable
-
-You can create a native executable using:
-
-```shell script
-./mvnw package -Dnative
-```
-
-Or, if you don't have GraalVM installed, you can run the native executable build in a container using:
-
-```shell script
+```bash
 ./mvnw package -Dnative -Dquarkus.native.container-build=true
 ```
 
-You can then execute your native executable with: `./target/timepal-1.0.0-SNAPSHOT-runner`
+---
 
-If you want to learn more about building native executables, please consult <https://quarkus.io/guides/maven-tooling>.
+> Dev UI is available at: [http://localhost:8080/q/dev/](http://localhost:8080/q/dev/) (only in dev mode)
 
-## Related Guides
+---
 
-- REST resources for Hibernate ORM with Panache ([guide](https://quarkus.io/guides/rest-data-panache)): Generate Jakarta REST resources for your Hibernate Panache entities and repositories
-- REST ([guide](https://quarkus.io/guides/rest)): A Jakarta REST implementation utilizing build time processing and Vert.x. This extension is not compatible with the quarkus-resteasy extension, or any of the extensions that depend on it.
-- Hibernate Validator ([guide](https://quarkus.io/guides/validation)): Validate object properties (field, getter) and method parameters for your beans (REST, CDI, Jakarta Persistence)
-- SmallRye OpenAPI ([guide](https://quarkus.io/guides/openapi-swaggerui)): Document your REST APIs with OpenAPI - comes with Swagger UI
-- REST Jackson ([guide](https://quarkus.io/guides/rest#json-serialisation)): Jackson serialization support for Quarkus REST. This extension is not compatible with the quarkus-resteasy extension, or any of the extensions that depend on it
-- Scheduler ([guide](https://quarkus.io/guides/scheduler)): Schedule jobs and tasks
-- SmallRye JWT ([guide](https://quarkus.io/guides/security-jwt)): Secure your applications with JSON Web Token
-- Security JPA ([guide](https://quarkus.io/guides/security-getting-started)): Secure your applications with username/password stored in a database via Jakarta Persistence
-- JDBC Driver - PostgreSQL ([guide](https://quarkus.io/guides/datasource)): Connect to the PostgreSQL database via JDBC
+Prepared by: [@fatiharge](https://github.com/fatiharge) • 2025
